@@ -28,6 +28,14 @@ namespace Repository
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Incident>> GetAllIncidentsWithContactsAsync()
+        {
+            return await FindAll()
+                .Include(i=>i.Accounts).IgnoreAutoIncludes()
+                .OrderBy(i => i.Name)
+                .ToListAsync();
+        }
+
         public async Task<Incident?> GetIncidentByIdAsync(Guid id)
         {
             return await FindByCondition(i => i.IncidentId.Equals(id))

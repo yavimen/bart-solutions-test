@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Entities.Models
 {
@@ -15,6 +13,6 @@ namespace Entities.Models
         public ICollection<Contact>? Contacts { get; set; }
 
         public Guid? IncidentId { get; set;}
-        public Incident? Incident { get; set;}
+        //public Incident? Incident { get; set;}
     }
 }

@@ -21,6 +21,6 @@ namespace Entities.Models
         public string? LastName { get; set; }
 
         public Guid? AccountId { get; set; }
-        public Account? Account { get; set; }
+        //public Account? Account { get; set; }
     }
 }

@@ -6,6 +6,8 @@ namespace Contracts
     {
         Task<IEnumerable<Incident>> GetAllIncidentsAsync();
 
+        Task<IEnumerable<Incident>> GetAllIncidentsWithContactsAsync();
+
         Task<Incident?> GetIncidentByIdAsync(Guid id);
 
         void CreateIncident(Incident incident);

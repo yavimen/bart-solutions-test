@@ -39,6 +39,14 @@ namespace Repository
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Account>> GetAllAccountsWithDetailsAsync()
+        {
+            return await FindAll()
+                .Include(a => a.Contacts)
+                .OrderBy(a => a.Name)
+                .ToListAsync();
+        }
+
         public void UpdateAccount(Account account)
         {
             Update(account);

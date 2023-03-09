@@ -3,7 +3,6 @@ using Contracts;
 using Entities.Dto;
 using Entities.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace api.Controllers
 {
@@ -19,6 +18,7 @@ namespace api.Controllers
             _mapper = mapper;
         }
 
+        // https://localhost:7099/api/incident
         [HttpGet]
         public async Task<IActionResult> GetAllIncidents() 
         {
@@ -34,6 +34,31 @@ namespace api.Controllers
             }
         }
 
+        // https://localhost:7099/api/incident/details
+        [HttpGet("details")]
+        public async Task<IActionResult> GetAllIncidentsWithDetails()
+        {
+            try
+            {
+                var incidents = await _repositories.Incident.GetAllIncidentsWithContactsAsync();
+
+                return Ok(incidents);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal server error.");
+            }
+        }
+
+
+        //https://localhost:7099/api/incident
+        //{
+        //    "accountname":"test",
+        //    "email":"test@gmail.com",
+        //    "firstname":"test",
+        //    "lastname":"test",
+        //    "incidentdescription":"test"
+        //}
         [HttpPost]
         public async Task<IActionResult> CreateIncident([FromBody] IncidentForCreationDto incidentDto) 
         {
@@ -51,7 +76,7 @@ namespace api.Controllers
 
             var accountInSystem = await _repositories.Account.GetAccountByNameAsync(account.Name);
 
-            if (accountInSystem == null) 
+            if (accountInSystem is null) 
             {
                 return BadRequest("Account is not in the system.");
             }
@@ -60,36 +85,36 @@ namespace api.Controllers
 
             var contactInSystem = await _repositories.Contact.GetContactByEmailAsync(contact.Email);
 
+            if (contactInSystem != null && contactInSystem.AccountId != accountInSystem.AccountId)
+            {
+                return BadRequest("Email belongs to another account.");
+            }
+
             try
             {
                 if (contactInSystem != null)
                 {
-                    contactInSystem.Account = accountInSystem;
+                    contactInSystem.FirstName = contact.FirstName;
 
-                    contactInSystem.AccountId = accountInSystem.AccountId;
+                    contactInSystem.LastName = contact.LastName;
 
-                    if (accountInSystem.Contacts.FirstOrDefault(c => c.Email.Equals(contactInSystem.Email)) is null)
-                        accountInSystem.Contacts.Add(contact);
+                    _repositories.Contact.UpdateContact(contactInSystem);
                 }
                 else
                 {
                     contact.ContactId = Guid.NewGuid();
 
-                    contact.Account = accountInSystem;
-
                     contact.AccountId = accountInSystem.AccountId;
-
-                    accountInSystem.Contacts.Add(contact);
 
                     _repositories.Contact.CreateContact(contact);
                 }
 
                 var incident = _mapper.Map<Incident>(incidentDto);
-                incident.IncidentId = Guid.NewGuid();
-                incident.Name = Guid.NewGuid().ToString();
-                incident.Accounts = new List<Account>() { accountInSystem };
 
-                accountInSystem.Incident = incident;
+                incident.IncidentId = Guid.NewGuid();
+
+                incident.Name = Guid.NewGuid().ToString();
+
                 accountInSystem.IncidentId = incident.IncidentId;
 
                 _repositories.Incident.CreateIncident(incident);
